@@ -1,0 +1,124 @@
+clear all
+close all
+
+
+% read from table and manipulate data
+points_interval = 1;
+feasibility     = readtable("multiagent_feasibility.csv");
+remove_zero_velocity_poits = feasibility.vel_grid == 0.;
+
+pos_grid_unique   = unique(feasibility.pos_grid);
+vel_grid_unique   = unique(feasibility.vel_grid);
+angle_grid_unique = unique(feasibility.angle_grid);
+
+speed_conversion = 100;     % m/s -> cm/s
+pos_conversion   = 1;       % m -> m
+angle_conversion = 180/pi;  % rad -> deg
+
+step_pos   = (pos_grid_unique(end)  - pos_grid_unique(end-1))*pos_conversion ;
+step_vel   = 1.5
+step_angle = (angle_grid_unique(end)- angle_grid_unique(end-1))*angle_conversion
+
+feasibility.pos_grid(remove_zero_velocity_poits)   = NaN;
+feasibility.vel_grid(remove_zero_velocity_poits)   = NaN;
+feasibility.angle_grid(remove_zero_velocity_poits) = NaN;
+
+% separate success from failure points
+success_pos_grid   = feasibility.pos_grid(boolean(feasibility.success_mask));
+success_vel_grid   = feasibility.vel_grid(boolean(feasibility.success_mask));
+success_angle_grid = feasibility.angle_grid(boolean(feasibility.success_mask));
+
+failure_pos_grid   = feasibility.pos_grid(~boolean(feasibility.success_mask));
+failure_vel_grid   = feasibility.vel_grid(~boolean(feasibility.success_mask));
+failure_angle_grid = feasibility.angle_grid(~boolean(feasibility.success_mask));
+
+
+% plot result
+fig = figure(Position = [169,373,870,354],Renderer="painters");
+ax  = gca();
+grid on
+hold on
+xlabel('$\|e_{\delta r}\| [m]$',Interpreter="latex");
+ylabel('$\|e_{\delta v}\| [cm/s]$',Interpreter="latex");
+zlabel('$\alpha [deg]$',Interpreter="latex");
+
+
+
+pos_plot   = success_pos_grid(1:points_interval:end)*pos_conversion;
+vel_plot   = success_vel_grid(1:points_interval:end)*speed_conversion;
+angle_plot = success_angle_grid(1:points_interval:end)*angle_conversion;
+
+mat_plot = [pos_plot';vel_plot';angle_plot'];
+
+scatter3( success_pos_grid(1:points_interval:end)*pos_conversion, ...
+          success_vel_grid(1:points_interval:end)*speed_conversion, ...
+          success_angle_grid(1:points_interval:end)*angle_conversion, ...,
+          1,...
+          "filled", ...
+          "black",...
+          "MarkerFaceAlpha",0.4)
+
+scatter3( failure_pos_grid(1:points_interval:end)*pos_conversion, ...
+          failure_vel_grid(1:points_interval:end)*speed_conversion, ...
+          failure_angle_grid(1:points_interval:end)*angle_conversion, ...,
+          3,...
+          "filled", ...
+          "red",...
+          "MarkerFaceAlpha",0.5)
+
+view(35.699999989950399,28.752040415016104)
+legend("Feasible Solution","Unfeasible")
+
+
+% FacesConnectivity = create_connectivity(length(success_pos_grid(1:points_interval:end)));
+% vertices          = compute_vertices(mat_plot,[step_pos/2,step_vel/2,step_angle/2]);
+% patch('Vertices',vertices', 'Faces',FacesConnectivity,'facealpha', 1);
+
+
+
+
+function connectivity_matrix = create_connectivity(cube_number)
+% cubes are counted from cube zero and it makes all the process easier
+% cube number is an integer
+base_connectivity_matrix =[1 2 3 4 1;
+                           5 6 7 8 5;
+                           1 2 6 5 1;
+                           2 6 7 3 2;
+                           3 7 8 4 3;
+                           1 5 8 4 1;];
+
+
+connectivity_matrix = zeros(6*cube_number,5);
+for jj = 0:(cube_number-1)
+    connectivity_matrix(jj*6+1:(jj+1)*6,:) = base_connectivity_matrix+(jj*8);
+end
+
+end
+
+function vertices = compute_vertices(voxels_centers,voxel_size)
+%voxel_vertices is a 3,N matix
+%voxel_size     is a 3,1 vector [x_width,y_width,z_width]
+[~,n_voxels] = size(voxels_centers);
+
+% define the height vertices 
+v1 = [0  0  0];
+v2 = [1  0  0];
+v3 = [1  1  0];
+v4 = [0  1  0];
+v5 = [0  0  1];
+v6 = [1  0  1];
+v7 = [1  1  1];
+v8 = [0  1  1];
+
+% centered cube
+base_coordinates = [v1',v2',v3',v4',v5',v6',v7',v8']-[1,1,1]'*sqrt(3)/2;
+% streatch cube so to have the size that you need
+base_coordinates = diag(voxel_size/2)*base_coordinates;
+
+
+vertices = zeros(3,8*n_voxels);
+for jj = 0:(n_voxels-1)
+    vertices(:,jj*8+1:(jj+1)*8) = base_coordinates+voxels_centers(:,jj+1);
+end
+end
+
