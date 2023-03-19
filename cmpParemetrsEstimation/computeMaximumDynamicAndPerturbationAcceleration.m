@@ -1,7 +1,5 @@
-
 clear
 close all
-addpath("../utilities/")
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% USER DEFINED PARAMETERS 
 % PRO orbit parameters
@@ -12,8 +10,8 @@ alpha_r =  [deg2rad(90),deg2rad(90),deg2rad(90)];% rad
 alpha_w =  [deg2rad(0),deg2rad(0),deg2rad(0)]; % rad 
 
 
-DeltaT  = 0.1 % [s] sampling time of the ZOH MPC scheme
-epsilon_u = 0.02 % [m/s2] maximum control acceleration
+DeltaT  = 0.1; % [s] sampling time of the ZOH MPC scheme
+epsilon_u = 0.02; % [m/s2] maximum control acceleration
 
 % barrier functions coefficients 
 epsilon_r = 7;
@@ -92,14 +90,14 @@ max_nabla2U_j2 = max(arrayfun(nabla2U_j2,nu_range));
 %%
 figure
 sgtitle("maximum norm of the Hessian for J2 and point mass gravity potentila")
-ax = subplot(211);
+subplot(211);
 grid on
 hold on
 plot(nu_range,arrayfun(nabla2U_pm,nu_range))
 xlabel("true longitude [rad]")
 ylabel("\nabla^2 U_{pm}")
 
-ax = subplot(212);
+subplot(212);
 grid on
 hold on
 plot(nu_range,arrayfun(nabla2U_j2,nu_range))
@@ -136,8 +134,8 @@ for jj = length(rho_r):-1:1
     epsilon_d = max_differential_j2 + max_differential_drag;
     
     % maximum relative dynamic acceleration
-    omega_bar = angular_momentum/((1-ecc)*p)^2
-    epsilon_f = 2*omega_bar*max_vel_ref + omega_bar^2*max_acc_ref + max_pos_ref * max_nabla2U_pm
+    omega_bar = angular_momentum/((1-ecc)*p)^2;
+    epsilon_f = 2*omega_bar*max_vel_ref + omega_bar^2*max_acc_ref + max_pos_ref * max_nabla2U_pm;
     
     %% Computation of Lipschitz constants
     
@@ -186,17 +184,17 @@ for jj = length(rho_r):-1:1
     settings(jj).max_vel_ref = max_vel_ref;
     settings(jj).u_max = epsilon_u;
 
-    directory = sprintf("../python_simulations_to_plot/multiagent_simulations/agent%i",jj-1);
+    directory = sprintf("../simulationsResult/agent%i",jj-1);
     mkdir(directory)
     writetable(struct2table(settings(jj)), fullfile(directory,'settings.csv'))
 end
 %%
 
-fileID = fopen('multiagentParameetrs.txt','w');
+fileID = fopen('multiagentParameters.txt','w');
 fieldsName = fields(settings);
 
 for jj= 1:length(fieldsName)
-      row = fprintf(fileID,'%s & %.3e & %.3e & %.3e \\\\ \n',string(fieldsName{jj}),settings(1).(fieldsName{jj}),settings(2).(fieldsName{jj}),settings(3).(fieldsName{jj}))
+      row = fprintf(fileID,'%s & %.3e & %.3e & %.3e \\\\ \n',string(fieldsName{jj}),settings(1).(fieldsName{jj}),settings(2).(fieldsName{jj}),settings(3).(fieldsName{jj}));
 end
 fclose(fileID);
 
