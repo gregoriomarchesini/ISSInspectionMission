@@ -8,7 +8,8 @@ rho_s   =  [0,0,0];   % m
 rho_w   =  [0,60,140];  % m
 alpha_r =  [deg2rad(90),deg2rad(90),deg2rad(90)];% rad
 alpha_w =  [deg2rad(0),deg2rad(0),deg2rad(0)]; % rad 
-
+k1      = 1.4;
+k2      = 1.4;
 
 DeltaT  = 0.1; % [s] sampling time of the ZOH MPC scheme
 epsilon_u = 0.02; % [m/s2] maximum control acceleration
@@ -129,13 +130,13 @@ for jj = length(rho_r):-1:1
     % aerodynamic drag maximum acceleration
     max_differential_drag = abs(density*(CD_dep - CD_ch)*V_chief^2);
     % J2 maximum acceleration 
-    max_differential_j2 = max_pos_ref * max_nabla2U_j2;
+    max_differential_j2 = k1*max_pos_ref * max_nabla2U_j2;
     % maximumm perturbing acceleration 
     epsilon_d = max_differential_j2 + max_differential_drag;
     
     % maximum relative dynamic acceleration
     omega_bar = angular_momentum/((1-ecc)*p)^2;
-    epsilon_f = 2*omega_bar*max_vel_ref + omega_bar^2*max_acc_ref + max_pos_ref * max_nabla2U_pm;
+    epsilon_f = 2*omega_bar*k2*max_vel_ref + omega_bar^2*k1*max_pos_ref + k1*max_pos_ref * max_nabla2U_pm;
     
     %% Computation of Lipschitz constants
     
