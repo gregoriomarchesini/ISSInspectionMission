@@ -100,12 +100,23 @@ max_nabla2U_j2 = max(arrayfun(nabla2U_j2,nu_range));
 % replace all as a function of the distance from the earth only
 chief_position   = r_ch*sqrt(3)*[1,1,1];
 
-lambda_xpm_max  = double(max(sqrt(eig(subs(lambda_xpm ,r_vec,chief_position)'*subs(lambda_xpm ,r_vec,chief_position)))));
-lambda_ypm_max  = double(max(sqrt(eig(subs(lambda_ypm ,r_vec,chief_position)'*subs(lambda_ypm ,r_vec,chief_position)))));
-lambda_zpm_max  = double(max(sqrt(eig(subs(lambda_zpm ,r_vec,chief_position)'*subs(lambda_zpm ,r_vec,chief_position)))));
-lambda_xj2_max  = double(max(sqrt(eig(subs(lambda_xj2,r_vec,chief_position)'*subs(lambda_xj2,r_vec,chief_position)))));
-lambda_yj2_max  = double(max(sqrt(eig(subs(lambda_yj2,r_vec,chief_position)'*subs(lambda_yj2,r_vec,chief_position)))));
-lambda_zj2_max  = double(max(sqrt(eig(subs(lambda_zj2,r_vec,chief_position)'*subs(lambda_zj2,r_vec,chief_position)))));
+lambda_xpm_rfun  = max(eig(subs(lambda_xpm ,r_vec,chief_position)'*subs(lambda_xpm ,r_vec,chief_position));
+lambda_ypm_rfun  = eig(subs(lambda_ypm ,r_vec,chief_position)'*subs(lambda_ypm ,r_vec,chief_position));
+lambda_zpm_rfun  = eig(subs(lambda_zpm ,r_vec,chief_position)'*subs(lambda_zpm ,r_vec,chief_position));
+lambda_xj2_rfun  = eig(subs(lambda_xj2,r_vec,chief_position)'*subs(lambda_xj2,r_vec,chief_position)) ;
+lambda_yj2_rfun  = eig(subs(lambda_yj2,r_vec,chief_position)'*subs(lambda_yj2,r_vec,chief_position)) ;
+lambda_zj2_rfun  = eig(subs(lambda_zj2,r_vec,chief_position)'*subs(lambda_zj2,r_vec,chief_position)) ;
+
+
+
+
+
+lambda_xpm_max  = double(norm(subs(lambda_xpm_rfun ,dist,r_ch )));
+lambda_ypm_max  = double(norm(subs(lambda_ypm_rfun ,dist,r_ch )));
+lambda_zpm_max  = double(norm(subs(lambda_zpm_rfun ,dist,r_ch )));
+lambda_xj2_max  = double(norm(subs(lambda_xj2_rfun ,dist,r_ch )));
+lambda_yj2_max  = double(norm(subs(lambda_yj2_rfun ,dist,r_ch )));
+lambda_zj2_max  = double(norm(subs(lambda_zj2_rfun ,dist,r_ch )));
 
 max_jac3Uj2_ch = sqrt(lambda_xj2_max^2 + lambda_yj2_max^2 + lambda_zj2_max^2)
 max_jac3Upm_ch = sqrt(lambda_xpm_max^2 + lambda_ypm_max^2 + lambda_zpm_max^2)
@@ -161,9 +172,9 @@ for jj = length(rho_r):-1:1
     
     % maximum dynamics and perturbations time derivative 
     
-    dr_dddot_max = max_jac3Upm_ch*k1*max_pos_ref*V_chief;
-    da_dot_cf    = 3*mean_motion*(epsilon_f +epsilon_u) + 3*mean_motion^2*k2*max_pos_ref+ mean_motion^3*k1*max_pos_ref;
-    dd_dot_j2    = max_jac3Uj2_ch*k1*max_pos_ref*V_chief;
+    dr_dddot_max = max_jac3Upm_ch*k1*dr_max*V_chief;
+    da_dot_cf    = 3*omega_w*(epsilon_f +epsilon_u) + 3*omega_w^2*k2*dv_max+ omega_w^3*k1*dr_max;
+    dd_dot_j2    = max_jac3Uj2_ch*k1*dr_max*V_chief;
     beta         = dr_dddot_max + da_dot_cf + dd_dot_j2;
 
     %% Computation of Lipschitz constants
@@ -211,20 +222,14 @@ for jj = length(rho_r):-1:1
     settings(jj).a_bar = a_bar;
     settings(jj).max_acc_ref = max_acc_ref;
     settings(jj).max_vel_ref = max_vel_ref;
-    settings(jj).max_pos_ref = max_pos_ref;
     settings(jj).u_max = epsilon_u;
-    settings(jj).beta = beta;
-    settings(jj).rho_r = rho_r(jj);
-    settings(jj).rho_s = rho_s(jj);
-    settings(jj).rho_w = rho_w(jj);
-    settings(jj).alpha_w = alpha_w(jj);
-    settings(jj).alpha_r = alpha_r(jj);
 
     directory = sprintf("../simulationsResult/agent%i",jj-1);
     mkdir(directory)
     writetable(struct2table(settings(jj)), fullfile(directory,'settings.csv'))
 end
 %%
+
 fileID = fopen('multiagentParameters.txt','w');
 fieldsName = fields(settings);
 

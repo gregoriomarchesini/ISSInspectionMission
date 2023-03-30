@@ -137,6 +137,7 @@ for ii,er_mag in enumerate(position_magnitude_grid) :
                 color[ii,jj,kk] =  0.   
             
             count += 1  
+            print(np.floor(count/number_of_tests)*100)
 
 
 color = np.ravel(color)

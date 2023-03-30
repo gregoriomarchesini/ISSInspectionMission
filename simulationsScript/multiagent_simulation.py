@@ -1,7 +1,6 @@
 import sys,os
 print(os.getcwd())
 sys.path.insert(0,os.getcwd())
-print(sys.path)
 import  numpy as np
 import  src.conversions_tools as conversions
 import  src.dynamic_models as dynamic_models
@@ -55,7 +54,6 @@ for kk  in range(3) :
     dict = pd.read_csv(agent_dir + "/settings.csv",delimiter=",").to_dict()
     dict = {key:value[0] for key,value in dict.items() }
     settings.append(dict)
-print(settings[1])
 ## DISCRETIZED MODEL SETTINGS
 int_time         = settings[1]["DeltaT"]   # discretization time for the model. It also the actiation time of the engine
 n_steps_rk4      = 3      # number of steps of RK4 inside the integration time (add precision at the integration)

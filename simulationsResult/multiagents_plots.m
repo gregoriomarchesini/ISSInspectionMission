@@ -32,8 +32,8 @@ end
 angle_figure = figure;
 angle_figure_ax = gca();
 
-for jj = 1:3
-    ax_list3{jj} = subplot(3,1,jj);
+for jj = 1:5
+    ax_list3{jj} = subplot(5,1,jj);
     hold(ax_list3{jj})
     grid on
     ax_list3{jj}.XLim = [0,4];
@@ -73,6 +73,8 @@ for kk = 1:length(path_list)
     ax_list{3}.YLim = [-0.003,max(CBF.velocity_constraint)*1.2];
     % state performace
     state_array           = table2array(state);
+    disp("initial state")
+    disp(state_array(1,:))
     reference_state_array = table2array(state_ref);
     state_error = state_array-reference_state_array;
     
@@ -125,12 +127,16 @@ for kk = 1:length(path_list)
     ax_list3{3}.XLabel.String = "time [min]";
     ax_list3{3}.YLabel.String = "dot pos vel ";
 
+    plot(ax_list3{4},CBF.time,pos_error,LineWidth=lwidth);
+    ax_list3{4}.XLabel.String = "time [min]";
+    ax_list3{4}.YLabel.String = "pos error norm";
+
+    plot(ax_list3{5},CBF.time,vel_error,LineWidth=lwidth);
+    ax_list3{5}.XLabel.String = "time [min]";
+    ax_list3{5}.YLabel.String = "vel error norm ";
+
 
 end
-
-
-
-
 
 
 legend(ax_list{1})
