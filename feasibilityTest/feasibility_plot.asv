@@ -1,10 +1,13 @@
 clear all
 close all
-addpath("../utilities")
 
+% in the feasibility.success_mask you find a boolean vector
+% 1 feasible problem
+% 0 unfeasible
+% if everything is feasible then you have it as all ones 
 % read from table and manipulate data
 points_interval = 1;
-feasibility     = readtable("multiagent_feasibility.csv");
+feasibility     = readtable("multiagentFeasibilityTable.csv");
 remove_zero_velocity_poits = feasibility.vel_grid == 0.;
 
 pos_grid_unique   = unique(feasibility.pos_grid);
@@ -34,13 +37,13 @@ failure_angle_grid = feasibility.angle_grid(~boolean(feasibility.success_mask));
 
 
 % plot result
-fig = figure("Position",[169,373,870,354]);
+fig = figure(Position = [169,373,870,354],Renderer="painters");
 ax  = gca();
-
+grid on
 hold on
-xlabel("|\boldsymbol{e}_{\delta r}\| [m]");
-ylabel("\|\boldsymbol{e}_{\delta v}\| [cm/s]");
-zlabel("\alpha [deg]");
+xlabel('$\|e_{\delta r}\| [m]$',Interpreter="latex");
+ylabel('$\|e_{\delta v}\| [cm/s]$',Interpreter="latex");
+zlabel('$\alpha [deg]$',Interpreter="latex");
 
 
 
@@ -69,13 +72,16 @@ scatter3( failure_pos_grid(1:points_interval:end)*pos_conversion, ...
 view(35.699999989950399,28.752040415016104)
 legend("Feasible Solution","Unfeasible")
 
-
+if any(~feasibility.success_mask)
+    frpint('at least one unfeasibility point exists');
+else
+    fprintf('All points are feasible?')
 % FacesConnectivity = create_connectivity(length(success_pos_grid(1:points_interval:end)));
 % vertices          = compute_vertices(mat_plot,[step_pos/2,step_vel/2,step_angle/2]);
 % patch('Vertices',vertices', 'Faces',FacesConnectivity,'facealpha', 1);
 
 
-
+feasibility.success_mask
 
 function connectivity_matrix = create_connectivity(cube_number)
 % cubes are counted from cube zero and it makes all the process easier

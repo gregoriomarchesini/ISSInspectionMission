@@ -1,7 +1,10 @@
 clear all
 close all
 
-
+% in the feasibility.success_mask you find a boolean vector
+% 1 feasible problem
+% 0 unfeasible
+% if everything is feasible then you have it as all ones 
 % read from table and manipulate data
 points_interval = 1;
 feasibility     = readtable("multiagentFeasibilityTable.csv");
@@ -69,12 +72,15 @@ scatter3( failure_pos_grid(1:points_interval:end)*pos_conversion, ...
 view(35.699999989950399,28.752040415016104)
 legend("Feasible Solution","Unfeasible")
 
+if any(~feasibility.success_mask)
+    frpint('at least one unfeasibility point exists');
+else
+    fprintf('All points are feasible!')
+end
 
 % FacesConnectivity = create_connectivity(length(success_pos_grid(1:points_interval:end)));
 % vertices          = compute_vertices(mat_plot,[step_pos/2,step_vel/2,step_angle/2]);
 % patch('Vertices',vertices', 'Faces',FacesConnectivity,'facealpha', 1);
-
-
 
 
 function connectivity_matrix = create_connectivity(cube_number)
